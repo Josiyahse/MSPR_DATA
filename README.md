@@ -5,7 +5,7 @@ Si voue êtes sur window ou mac, il faudra créer un fichier de configuration po
 Sur ces machine les spec sont limité par defaut et elles empêche Airflow de fonctionner. 
 Céer un ficher dans : C:\Users\<Utillisateur>\.wslconfig
 
-🚨🚨 Cette configuration est global pour votre Docker. Si vou souhaiter configurer qu'un seul container il faut utiliser le fichier wsl.conf directment present dans le container. Plus sur [text](https://learn.microsoft.com/en-us/windows/wsl/wsl-config#wslconf)
+🚨🚨 Cette configuration est global pour votre Docker. Si vou souhaiter configurer qu'un seul container il faut utiliser le fichier wsl.conf directment present dans le container. Plus sur [Airflow docker compose](https://learn.microsoft.com/en-us/windows/wsl/wsl-config#wslconf)
 
 Et voicis un exemple de configuration:
 ```bash:
@@ -27,4 +27,19 @@ swapfile=C:\\temp\\wsl-swap.vhdx
 # Enable experimental features
 [experimental]
 sparseVhd=true
+```
+
+Une fois le tout paramétrer, créer les dossier suivants dans le dossier airflow:
+-config
+-dags
+-logs
+
+Lancer ensuite la commande dans le repertoire airflow:
+```
+docker compose up airflow-init
+```
+
+Une fois la commande précédente terminer, lancer dans le airflow:
+```
+docker compose up
 ```
