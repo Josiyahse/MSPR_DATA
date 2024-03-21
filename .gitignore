@@ -1,3 +1,4 @@
 /airflow/config
 /airflow/dags
+/airflow/logs
 /airflow/logs/*
