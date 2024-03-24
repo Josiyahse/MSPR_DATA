@@ -1,3 +1,4 @@
 /airflow/config
 /airflow/logs
 /airflow/logs/*
+.idea
