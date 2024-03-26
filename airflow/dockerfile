@@ -1,0 +1,5 @@
+# Utilisez l'image officielle d'Airflow comme base
+FROM apache/airflow:2.8.3
+
+# Installez dbfread ou tout autre paquet Python avec pip
+RUN pip install dbfread

@@ -43,3 +43,9 @@ Une fois la commande précédente terminer, lancer dans le airflow:
 ```
 docker compose up
 ```
+
+Vous pouver determiner le reseau sur quel adress IP tourne votre base de donné avce la commande:
+````
+docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' <nom_conteneur_postgres>
+
+```
