@@ -7,8 +7,8 @@ import pandas as pd
 from sqlalchemy import create_engine, inspect
 
 # Configuration
-URL = "https://www.data.gouv.fr/fr/datasets/r/18847484-f622-4ccc-baa9-e6b12f749514"
-FILENAME = "resultats-par-niveau-dpt-t1-france-entiere.xlsx"  # Mettez à jour le chemin vers le fichier téléchargé
+URL = "https://www.data.gouv.fr/fr/datasets/r/e7b263e5-bae2-43cc-8944-c8daae6f7ff6"
+FILENAME = "resultats-par-niveau-dpt-t2-france-entiere.xlsx"  # Mettez à jour le chemin vers le fichier téléchargé
 DB_CONNECTION = "postgresql+psycopg2://airflow:airflow@172.16.5.3:5432/postgres"
 
 # Configurez le logger
@@ -62,7 +62,7 @@ def clean_and_transform_data():
         'votes': row[i + 2],
         'vote_per_subscribe': row[i + 3],
         'vote_per_express': row[i + 4],
-        'round': 1,
+        'round': 2,
         'year': year_of_election
       }
       new_data.append(candidate_data)
@@ -128,7 +128,7 @@ default_args = {
   "email_on_retry": False,
 }
 
-dag = DAG("election_data_processing_round_1", default_args=default_args, schedule_interval="@daily")
+dag = DAG("election_data_processing_round_2", default_args=default_args, schedule_interval="@daily")
 
 t1 = PythonOperator(
   task_id="download_xlsx_file",
