@@ -1,0 +1,62 @@
+[
+  {
+    "name": "Lutte ouvrière",
+    "birthday": "1968",
+    "position": ["Extrême-gauche"]
+  },
+  {
+    "name": "Debout la France !",
+    "birthday": "2014",
+    "position": ["Droite-radicale", "Extrême-droite"]
+  },
+  {
+    "name": "Le parti socialiste",
+    "birthday": "1969",
+    "position": ["Gauche"]
+  },
+  {
+    "name": "Europe écologie les verts",
+    "birthday": "2020",
+    "position": ["Gauche"]
+  },
+  {
+    "name": "En marche !",
+    "birthday": "2016",
+    "position": ["Gauche-centre-gauche", "Droite-centre-droit"]
+  },
+  {
+    "name": "Les républicains",
+    "birthday": "2015",
+    "position": ["Droite"]
+  },
+  {
+    "name": "Résistons !",
+    "birthday": "2015",
+    "position": ["Droite"]
+  },
+  {
+    "name": "Le rassemblement national",
+    "birthday": "2018",
+    "position": ["Extrême-droite"]
+  },
+  {
+    "name": "La France insoumise",
+    "birthday": "2016",
+    "position": ["Gauche-radicale", "Extrême-gauche"]
+  },
+  {
+    "name": "Nouveau parti anticapitaliste",
+    "birthday": "2009",
+    "position": ["Extrême-gauche"]
+  },
+  {
+    "name": "Parti communiste français",
+    "birthday": "1943",
+    "position": ["Gauche-radicale", "Extrême-gauche"]
+  },
+  {
+    "name": "Reconquête !",
+    "birthday": "2021",
+    "position": ["Extrême-droite"]
+  }
+]
