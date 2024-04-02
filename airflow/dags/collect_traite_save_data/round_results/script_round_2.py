@@ -1,3 +1,4 @@
+from airflow.models import Variable
 from airflow import DAG
 import logging
 from airflow.operators.python_operator import PythonOperator
@@ -9,7 +10,7 @@ from sqlalchemy import create_engine, inspect
 # Configuration
 URL = "https://www.data.gouv.fr/fr/datasets/r/e7b263e5-bae2-43cc-8944-c8daae6f7ff6"
 FILENAME = "resultats-par-niveau-dpt-t2-france-entiere.xlsx"  # Mettez à jour le chemin vers le fichier téléchargé
-DB_CONNECTION = "postgresql+psycopg2://airflow:airflow@172.16.5.3:5432/postgres"
+DB_CONNECTION = Variable.get("AIRFLOW_DB_CONNECTION")
 
 # Configurez le logger
 logger = logging.getLogger("airflow.task")
@@ -32,7 +33,6 @@ def clean_and_transform_data():
     "Code du département": "code_department",
   }
   df.rename(columns=department_columns, inplace=True)
-
   df['code_department'] = df['code_department'].apply(lambda x: x if len(x) > 2 else x.zfill(2))
 
   # Traitement des données des départements
@@ -48,42 +48,50 @@ def clean_and_transform_data():
   # Lecture des données des candidats
   candidates_df = pd.read_sql("SELECT id, lastname FROM candidates", con=engine)
 
-  # Assumer que chaque groupe de 6 colonnes correspond à un candidat
-  num_candidate_info_cols = 6
   # Initialiser une liste pour stocker les données réorganisées
   new_data = []
 
+  # Assurez-vous que la variable year_of_election est définie quelque part dans votre code
+  # year_of_election = 2024
+
   for row_index, row in df.iterrows():
-    for i in range(0, len(row) - num_candidate_info_cols, num_candidate_info_cols):
-      # Extrait les données pour le candidat actuel
-      candidate_data = {
-        'department_id': row['department_id'],
-        'candidate_lastname': row[i],  # i est l'index où le nom du candidat apparaît
-        'votes': row[i + 2],
-        'vote_per_subscribe': row[i + 3],
-        'vote_per_express': row[i + 4],
-        'round': 2,
-        'year': year_of_election
-      }
-      new_data.append(candidate_data)
+    # Parcourir chaque cellule de la ligne à la recherche de correspondances de candidats
+    for candidate_index, candidate_lastname in candidates_df['lastname'].items():
+      # Trouver l'index de la cellule qui contient le nom du candidat
+      candidate_positions = row[row == candidate_lastname].index.tolist()
+      if candidate_positions:
+        for start_position in candidate_positions:
+          # Assurez-vous que start_position est un entier pour l'utiliser avec iloc
+          if isinstance(start_position, str) and start_position.startswith("Unnamed"):
+            start_position = int(start_position.replace("Unnamed: ", ""))
+          else:
+            # Si c'est le nom de la colonne, obtenir l'index numérique correspondant
+            start_position = df.columns.get_loc(start_position)
+
+          votes = row.iloc[start_position + 2]
+          vote_per_subscribe = row.iloc[start_position + 3]
+          vote_per_express = row.iloc[start_position + 4]
+
+          candidate_data = {
+            'department_id': row['department_id'],
+            'candidate_id': candidates_df.loc[candidates_df['lastname'] == candidate_lastname, 'id'].values[0],
+            'votes': votes,
+            'vote_per_subscribe': vote_per_subscribe,
+            'vote_per_express': vote_per_express,
+            'round': 2,  # Assurez-vous que la valeur du round est correcte
+            'year': year_of_election
+          }
+          new_data.append(candidate_data)
 
   # Convertir la liste en un nouveau DataFrame
   df_candidates = pd.DataFrame(new_data)
-
-  # Associer un candidate_id à chaque entrée en fonction du lastname
-  df_candidates['candidate_id'] = df_candidates['candidate_lastname'].map(
-    candidates_df.set_index('lastname')['id']
-  ).astype(pd.Int64Dtype())
 
   # Filtrer le DataFrame pour ne garder que les colonnes nécessaires
   df_candidates = df_candidates[
     ['department_id', 'candidate_id', 'votes', 'vote_per_subscribe', 'vote_per_express', 'round', 'year']]
 
-  # Retirer les lignes où candidate_id est NA
-  df_candidates.dropna(subset=['candidate_id'], inplace=True)
-
-  # Retirer les lignes où department_id est NA
-  df_candidates.dropna(subset=['department_id'], inplace=True)
+  # Retirer les lignes où candidate_id ou department_id est NA
+  df_candidates.dropna(subset=['candidate_id', 'department_id'], inplace=True)
 
   return df_candidates
 
@@ -128,7 +136,7 @@ default_args = {
   "email_on_retry": False,
 }
 
-dag = DAG("election_data_processing_round_2", default_args=default_args, schedule_interval="@daily")
+dag = DAG("election_data_processing_round_2", default_args=default_args)
 
 t1 = PythonOperator(
   task_id="download_xlsx_file",

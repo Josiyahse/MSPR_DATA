@@ -5,11 +5,12 @@ import requests
 from sqlalchemy import create_engine, Column, Integer, String, ForeignKey, Float, and_
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, relationship
+from airflow.models import Variable
 from airflow import DAG
 from airflow.operators.python_operator import PythonOperator
 
 # Configuration de la base de données
-DB_CONNECTION = "postgresql+psycopg2://airflow:airflow@172.16.5.3:5432/postgres"
+DB_CONNECTION = Variable.get("AIRFLOW_DB_CONNECTION")
 Base = declarative_base()
 
 # Configuration du logger
@@ -119,7 +120,6 @@ dag = DAG(
   'load_poll_data',
   default_args=default_args,
   description='Load poll data from JSON to PostgreSQL',
-  schedule_interval='@daily',
 )
 
 t1 = PythonOperator(

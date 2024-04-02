@@ -1,13 +1,18 @@
 # MSPR_DATA
+
 Projet visant à créer un traitement et un traitement pour de la prédiction du prochain président de la république
 
 Si voue êtes sur window ou mac, il faudra créer un fichier de configuration pour votre container.
 Sur ces machine les spec sont limité par defaut et elles empêche Airflow de fonctionner.
-Céer un ficher dans : C:\Users\<Utillisateur>\.wslconfig
 
-🚨🚨 Cette configuration est global pour votre Docker. Si vou souhaiter configurer qu'un seul container il faut utiliser le fichier wsl.conf directment present dans le container. Plus sur [Airflow docker compose](https://learn.microsoft.com/en-us/windows/wsl/wsl-config#wslconf)
+Céer un ficher dans : ```C:\Users\<Utillisateur>\.wslconfig```
+
+🚨🚨 Cette configuration est global pour votre Docker. Si vou souhaiter configurer qu'un seul container il faut utiliser
+le fichier wsl.conf directment present dans le container. Plus
+sur [Airflow docker compose](https://learn.microsoft.com/en-us/windows/wsl/wsl-config#wslconf)
 
 Et voicis un exemple de configuration:
+
 ```bash:
 # Settings apply across all Linux distros running on WSL 2
 [wsl2]
@@ -29,22 +34,39 @@ swapfile=C:\\temp\\wsl-swap.vhdx
 sparseVhd=true
 ```
 
+Pour la visualisation avec redash, lancer cette commande:
+
+```
+docker-compose run --rm redash create_db
+```
+
 Une fois le tout paramétrer, créer les dossier suivants dans le dossier airflow:
--config
--dags
--logs
+- config
+- dags
+- logs
 
 Lancer ensuite la commande dans le repertoire airflow:
+
 ```
 docker compose up airflow-init
 ```
 
 Une fois la commande précédente terminer, lancer dans le airflow:
+
 ```
 docker compose up
 ```
 
-Vous pouver determiner le reseau sur quel adress IP tourne votre base de donné avce la commande:
+Vous pouvez determiner le réseau sur quelle adresse IP tourne votre base de donnée avec la commande:
+
 ```
-docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' <nom_conteneur_postgres>
+docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' airflow-postgres-1
 ```
+
+Une fois l'address récupérer, il faut définir la variable de connexion dans l'interface graphique de airflow.
+
+- Accédez à Admin > Connections.
+- Cliquez sur le bouton " + " pour ajouter une nouvelle connexion.
+- Remplissez les détails de la connexion:
+  - Nom: AIRFLOW_DB_CONNECTION
+  - String de connexion: ```postgresql+psycopg2://{USER}:{PASSWORD}@{IP_BASE_DANS_DOCKER}:5432/{BASE_DE_DONNEE}```

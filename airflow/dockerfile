@@ -2,5 +2,6 @@
 FROM apache/airflow:2.8.3
 
 # Installez dbfread ou tout autre paquet Python avec pip
-RUN pip install --upgrade dbfread python-dotenv xlrd unidecode openpyxl
+RUN pip install --upgrade dbfread python-dotenv xlrd unidecode openpyxl scikit-learn
+
 

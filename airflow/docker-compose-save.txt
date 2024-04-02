@@ -59,7 +59,7 @@ x-airflow-common:
     AIRFLOW__CELERY__BROKER_URL: redis://:@redis:6379/0
     AIRFLOW__CORE__FERNET_KEY: ''
     AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: 'true'
-    AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
+    AIRFLOW__CORE__LOAD_EXAMPLES: 'true'
     AIRFLOW__API__AUTH_BACKENDS: 'airflow.api.auth.backend.basic_auth,airflow.api.auth.backend.session'
     # yamllint disable rule:line-length
     # Use simple http server on scheduler for health checks
@@ -314,13 +314,12 @@ services:
     ports:
       - "5000:5000"
     environment:
-      REDASH_DATABASE_INIT: "true"
       PYTHONUNBUFFERED: 0
       REDASH_WEB_WORKERS: 4
       REDASH_LOG_LEVEL: "INFO"
       REDASH_REDIS_URL: "redis://:@redis:6379/0"
       REDASH_DATABASE_URL: "postgresql://airflow:airflow@postgres/redash"
-      REDASH_COOKIE_SECRET: "Q422k6vaXUk8DRTZZRDQ"
+      REDASH_COOKIE_SECRET: "redash-cookie-secret"
       REDASH_SECRET_KEY: "redash-secret-key"
       REDASH_MAIL_SERVER: "smtp2http"
       REDASH_MAIL_DEFAULT_SENDER: "dalong@qq.com"
@@ -332,35 +331,14 @@ services:
     depends_on:
       - postgres
       - redis
-    env_file:
-      - .env.redash
     environment:
-      REDASH_DATABASE_INIT: "true"
       PYTHONUNBUFFERED: 0
       REDASH_LOG_LEVEL: "INFO"
       REDASH_REDIS_URL: "redis://:@redis:6379/0"
       REDASH_DATABASE_URL: "postgresql://airflow:airflow@postgres/redash"
-      REDASH_COOKIE_SECRET: "Q422k6vaXUk8DRTZZRDQ"
       REDASH_MAIL_SERVER: "smtp2http"
       REDASH_MAIL_DEFAULT_SENDER: "dalong@qq.com"
     command: worker
-    restart: always
-
-  redash_scheduler:
-    image: redash/redash:latest
-    depends_on:
-      - postgres
-      - redis
-    environment:
-      REDASH_DATABASE_INIT: "true"
-      PYTHONUNBUFFERED: 0
-      REDASH_LOG_LEVEL: "INFO"
-      REDASH_REDIS_URL: "redis://:@redis:6379/0"
-      REDASH_DATABASE_URL: "postgresql://airflow:airflow@postgres/redash"
-      REDASH_COOKIE_SECRET: "Q422k6vaXUk8DRTZZRDQ"
-      REDASH_MAIL_SERVER: "smtp2http"
-      REDASH_MAIL_DEFAULT_SENDER: "dalong@qq.com"
-    command: scheduler
     restart: always
 
 volumes:

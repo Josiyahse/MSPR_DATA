@@ -1,3 +1,4 @@
+from airflow.models import Variable
 from airflow import DAG
 import logging
 from airflow.operators.python_operator import PythonOperator
@@ -8,12 +9,15 @@ from sqlalchemy import create_engine
 from sqlalchemy import inspect
 
 # Configuration
-URL = "https://www.data.gouv.fr/fr/datasets/r/18847484-f622-4ccc-baa9-e6b12f749514"  # Remplacez ceci par l'URL de votre fichier CSV
-FILENAME = "resultats-par-niveau-dpt-t1-france-entiere.xlsx"
-DB_CONNECTION = "postgresql+psycopg2://airflow:airflow@172.16.5.3:5432/postgres"
+URL = "https://www.data.gouv.fr/fr/datasets/r/e7b263e5-bae2-43cc-8944-c8daae6f7ff6"
+FILENAME = "resultats-par-niveau-dpt-t2-france-entiere.xlsx"  # Mettez à jour le chemin vers le fichier téléchargé
+DB_CONNECTION = Variable.get("AIRFLOW_DB_CONNECTION")
 
 # Configurez le logger
 logger = logging.getLogger("airflow.task")
+
+# Définir la constante pour l'année de vote
+YEAR_OF_VOTE = 2022
 
 
 # Télécharger le fichier xls
@@ -83,6 +87,10 @@ def clean_and_transform_data():
   # Vous pouvez ici sauvegarder df_final dans un fichier ou une base de données selon le besoin
   # Exemple : df_final.to_excel('chemin_vers_le_fichier.xlsx', index=False)
 
+  # Ajouter la colonne year avec la valeur constante
+  df_final['year'] = YEAR_OF_VOTE
+  df_final['round'] = 2
+
   return df_final
 
 
@@ -115,6 +123,8 @@ def save_to_postgres():
                         null_per_subscribe FLOAT,
                         express_per_subscribe FLOAT,
                         express_per_voter FLOAT,
+                        year INT,
+                        round INT,
                         department_id INTEGER,
                         CONSTRAINT fk_department
                         FOREIGN KEY (department_id)
@@ -140,7 +150,7 @@ default_args = {
   "email_on_retry": False,
 }
 
-dag = DAG("data_processing_pipeline_vote_information", default_args=default_args, schedule_interval="@daily")
+dag = DAG("data_processing_pipeline_vote_information_round_2", default_args=default_args)
 
 t1 = PythonOperator(task_id="download_xlsx_file", python_callable=download_xlsx_file, dag=dag)
 t2 = PythonOperator(task_id="clean_and_transform_data", python_callable=clean_and_transform_data, dag=dag)

@@ -1,3 +1,4 @@
+from airflow.models import Variable
 from airflow import DAG
 import logging
 from airflow.operators.python_operator import PythonOperator
@@ -9,7 +10,7 @@ from sqlalchemy import create_engine, inspect
 # Configuration
 URL = "https://www.data.gouv.fr/fr/datasets/r/18847484-f622-4ccc-baa9-e6b12f749514"
 FILENAME = "resultats-par-niveau-dpt-t1-france-entiere.xlsx"  # Mettez à jour le chemin vers le fichier téléchargé
-DB_CONNECTION = "postgresql+psycopg2://airflow:airflow@172.16.5.3:5432/postgres"
+DB_CONNECTION = Variable.get("AIRFLOW_DB_CONNECTION")
 
 # Configurez le logger
 logger = logging.getLogger("airflow.task")
@@ -128,7 +129,7 @@ default_args = {
   "email_on_retry": False,
 }
 
-dag = DAG("election_data_processing_round_1", default_args=default_args, schedule_interval="@daily")
+dag = DAG("election_data_processing_round_1", default_args=default_args)
 
 t1 = PythonOperator(
   task_id="download_xlsx_file",

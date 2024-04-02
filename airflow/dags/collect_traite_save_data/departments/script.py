@@ -1,3 +1,4 @@
+from airflow.models import Variable
 from airflow import DAG
 import logging
 from airflow.operators.python_operator import PythonOperator
@@ -11,7 +12,7 @@ from sqlalchemy import text
 # Configuration
 URL = "https://www.data.gouv.fr/fr/datasets/r/70cef74f-70b1-495a-8500-c089229c0254"  # Remplacez ceci par l'URL de votre fichier CSV
 FILENAME = "departements-france.csv"
-DB_CONNECTION = "postgresql+psycopg2://airflow:airflow@172.16.5.3:5432/postgres"
+DB_CONNECTION = Variable.get("AIRFLOW_DB_CONNECTION")
 REGION_CODE = 11
 
 # Configurez le logger
@@ -33,8 +34,6 @@ def clean_and_transform_data():
   return df_filtered
 
 
-# Enregistrer dans PostgreSQL
-# Enregistrer dans PostgreSQL
 # Enregistrer dans PostgreSQL
 def save_to_postgres():
   if DB_CONNECTION is None:
@@ -98,7 +97,7 @@ default_args = {
   "email_on_retry": False,
 }
 
-dag = DAG("data_processing_pipeline_departments", default_args=default_args, schedule_interval="@daily")
+dag = DAG("data_processing_pipeline_departments", default_args=default_args)
 
 t1 = PythonOperator(task_id="download_csv_file", python_callable=download_csv_file, dag=dag)
 t3 = PythonOperator(task_id="clean_and_transform_data", python_callable=clean_and_transform_data, dag=dag)

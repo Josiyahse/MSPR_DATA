@@ -3,6 +3,7 @@ import os
 from sqlalchemy import create_engine, Column, Integer, String, Date, ForeignKey, Text
 from sqlalchemy.orm import sessionmaker, relationship
 from sqlalchemy.ext.declarative import declarative_base
+from airflow.models import Variable
 from airflow import DAG
 from airflow.operators.python_operator import PythonOperator
 from datetime import datetime
@@ -12,7 +13,7 @@ current_directory = os.path.dirname(os.path.abspath(__file__))
 JSON_FILE = os.path.join(current_directory, 'candidates.json')
 
 # Base de données
-DB_CONNECTION = "postgresql+psycopg2://airflow:airflow@172.16.5.3:5432/postgres"
+DB_CONNECTION = Variable.get("AIRFLOW_DB_CONNECTION")
 Base = declarative_base()
 
 
@@ -119,7 +120,6 @@ dag = DAG(
   "load_candidates",
   default_args=default_args,
   description="Load candidates from JSON to PostgreSQL",
-  schedule_interval="@daily",
 )
 
 save_to_db_task = PythonOperator(

@@ -4,6 +4,7 @@ from dotenv import load_dotenv
 from sqlalchemy import create_engine, MetaData, Table, Column, Integer, String, ForeignKey
 from sqlalchemy.orm import sessionmaker, relationship
 from sqlalchemy.ext.declarative import declarative_base
+from airflow.models import Variable
 from airflow import DAG
 from airflow.operators.python_operator import PythonOperator
 from datetime import datetime
@@ -11,7 +12,7 @@ from datetime import datetime
 # Charger les variables d'environnement depuis .env
 load_dotenv()
 
-DB_CONNECTION = "postgresql+psycopg2://airflow:airflow@172.16.5.3:5432/postgres"
+DB_CONNECTION = Variable.get("AIRFLOW_DB_CONNECTION")
 
 current_directory = os.path.dirname(os.path.abspath(__file__))
 JSON_FILE = os.path.join(current_directory, 'parties.json')
@@ -89,8 +90,7 @@ default_args = {
 dag = DAG(
   "load_political_parties",
   default_args=default_args,
-  description="Load political parties from JSON to PostgreSQL",
-  schedule_interval="@daily",
+  description="Load political parties from JSON to PostgreSQL"
 )
 
 save_to_db_task = PythonOperator(

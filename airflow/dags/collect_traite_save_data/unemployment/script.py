@@ -1,3 +1,4 @@
+from airflow.models import Variable
 from airflow import DAG
 import logging
 from airflow.operators.python_operator import PythonOperator
@@ -12,7 +13,7 @@ URL = "https://www.insee.fr/fr/statistiques/fichier/2012804/sl_etc_2023T4.xls"  
 FILENAME = "sl_etc_2023T4.xls"
 SHEET_NAME = "Département"
 HEADER = 3  # Les index commencent à 0, donc 3 signifie la quatrième ligne
-DB_CONNECTION = "postgresql+psycopg2://airflow:airflow@172.16.5.3:5432/postgres"
+DB_CONNECTION = Variable.get("AIRFLOW_DB_CONNECTION")
 
 # Configurez le logger
 logger = logging.getLogger("airflow.task")
@@ -136,7 +137,7 @@ default_args = {
   "email_on_retry": False,
 }
 
-dag = DAG("data_processing_pipeline_unemployment", default_args=default_args, schedule_interval="@daily")
+dag = DAG("data_processing_pipeline_unemployment", default_args=default_args)
 
 t1 = PythonOperator(task_id="download_xls_file", python_callable=download_xls_file, dag=dag)
 t2 = PythonOperator(task_id="clean_and_transform_data", python_callable=clean_and_transform_data, dag=dag)
