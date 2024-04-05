@@ -43,7 +43,7 @@ def aggregate_data():
 FROM election_results e
 JOIN insecurities i ON e.department_id = i.department_id
 JOIN unemployment u ON e.department_id = u.department_id
-JOIN poll_rounds pr ON e.candidate_id = pr.candidate_id AND e.round = pr.tour AND e.year = pr.year
+JOIN poll_rounds pr ON e.candidate_id = pr.candidate_id AND e.year = pr.year
 JOIN candidates c ON e.candidate_id = c.id
 JOIN departments d ON e.department_id = d.id
 JOIN political_parties pp ON c.party_id = pp.id
@@ -51,16 +51,16 @@ LEFT JOIN party_positions ppn ON pp.id = ppn.party_id
 LEFT JOIN positions pos ON ppn.position_id = pos.id
 JOIN propositions prop ON c.id = prop.candidate_id AND e.year = prop.year
 JOIN vote_information vi ON e.department_id = vi.department_id AND e.year = vi.year
-WHERE e.department_id = :department_id
+WHERE e.department_id = :department_id AND e.round = 2
 GROUP BY e.candidate_id, d.name, e.round, e.votes, i.rate_per_thousand, u.total, pr.intentions, c.firstname, c.lastname, pp.name, prop.declarations, vi.subscribes, vi.voters, vi.nulls, vi.express
-        """)
+""")
     result = conn.execute(query, {'department_id': DEPARTMENT_ID}).fetchall()
     df = pd.DataFrame(result, columns=result[0].keys())
 
     #df = df.drop_duplicates(subset=['insecurities'])
 
     # Création de la table si elle n'existe pas
-    if not inspect(engine).has_table("election_data_set"):
+    if not inspect(engine).has_table("election_data_set_round_2"):
       df.to_sql('election_data_set', con=engine, index=False)
       logger.info("Table 'election_data_set' created and data inserted successfully.")
     else:

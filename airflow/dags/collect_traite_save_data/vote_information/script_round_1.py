@@ -131,6 +131,7 @@ def save_to_postgres():
                         year INT,
                         round INT,
                         department_id INTEGER,
+                        UNIQUE(department_id,round, year),
                         CONSTRAINT fk_department
                         FOREIGN KEY (department_id)
                         REFERENCES departments (id)

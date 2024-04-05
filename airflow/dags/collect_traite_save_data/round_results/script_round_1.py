@@ -39,6 +39,7 @@ def clean_and_transform_data():
   engine = create_engine(DB_CONNECTION)
   df = pd.read_excel(FILENAME, dtype={'Code du département': str})
 
+  #df = pd.read_excel(URL, header=[0])
   # Mapping des noms de colonnes pour les départements
   department_columns = {
     "Code du département": "code_department",
@@ -134,6 +135,7 @@ def save_to_postgres():
       logger.info("Table 'election_results' created successfully.")
 
     df_to_save = clean_and_transform_data()
+    #logger.info(df_to_save)
     df_to_save.to_sql(name="election_results", con=engine, if_exists="append", index=False)
     logger.info("Data saved to PostgreSQL successfully.")
   except Exception as e:
