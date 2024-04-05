@@ -9,11 +9,12 @@ from sqlalchemy import create_engine
 from sqlalchemy import inspect
 from sqlalchemy import text
 
+
 # Configuration
 URL = "https://www.data.gouv.fr/fr/datasets/r/70cef74f-70b1-495a-8500-c089229c0254"  # Remplacez ceci par l'URL de votre fichier CSV
 FILENAME = "departements-france.csv"
 DB_CONNECTION = Variable.get("AIRFLOW_DB_CONNECTION")
-REGION_CODE = 11
+# REGION_CODE = 11
 
 # Configurez le logger
 logger = logging.getLogger("airflow.task")
@@ -26,12 +27,25 @@ def download_csv_file():
     file.write(response.content)
 
 
+def convert_department_code(code):
+  if code == "2A":
+    return 265  # Code ASCII de 'A' est 65
+  elif code == "2B":
+    return 266  # Code ASCII de 'B' est 66
+  try:
+    return int(code)
+  except ValueError:
+    return code
+
 # Nettoyer et transformer les données
 def clean_and_transform_data():
   df = pd.read_csv(FILENAME)
-  # Filtrer pour ne garder que les données avec un code_region égal à 11
-  df_filtered = df[df['code_region'] == REGION_CODE]
-  return df_filtered
+
+  # Convertir les codes des départements
+  df['code_departement'] = df['code_departement'].apply(convert_department_code)
+
+  # Aucune filtration par région n'est nécessaire
+  return df
 
 
 # Enregistrer dans PostgreSQL

@@ -24,6 +24,17 @@ def download_csv_file():
     file.write(response.content)
 
 
+def convert_department_code(code):
+  if code == "2A":
+    return 265  # Code ASCII de 'A' est 65
+  elif code == "2B":
+    return 266  # Code ASCII de 'B' est 66
+  try:
+    return int(code)
+  except ValueError:
+    return code
+
+
 # Nettoyer et transformer les données
 def clean_and_transform_data():
   df = pd.read_csv(FILENAME, delimiter=';')
@@ -38,6 +49,9 @@ def clean_and_transform_data():
 
   # Convert 'Code.département' to integer after dropping NaN values
   df['Code.département'] = df['Code.département'].astype(int)
+
+  # Convertir les codes des départements
+  df['Code.département'] = df['Code.département'].apply(convert_department_code)
 
   # Similarly, convert the 'code_department' in the 'departments' DataFrame
   df_departments = pd.read_sql("SELECT id, code_department FROM departments", engine)
@@ -86,6 +100,8 @@ def clean_and_transform_data():
     'department_id'
   ]]
 
+  #df_final = df_final.drop_duplicates(subset=['tauxpourmille'])
+
   return df_final
 
 
@@ -114,6 +130,7 @@ def save_to_postgres():
                         habitation_per_thousand INTEGER,
                         rate_per_thousand FLOAT,
                         department_id INTEGER,
+                        UNIQUE(department_id,year),
                         CONSTRAINT fk_department
                         FOREIGN KEY (department_id)
                         REFERENCES departments (id)

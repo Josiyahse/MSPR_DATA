@@ -28,11 +28,13 @@ def download_xlsx_file():
 
 
 def convert_department_code(code):
+  if code == "2A":
+    return 265  # Code ASCII de 'A' est 65
+  elif code == "2B":
+    return 266  # Code ASCII de 'B' est 66
   try:
-    # Convertit le code en entier, ce qui transformera "01" en 1, etc.
     return int(code)
   except ValueError:
-    # Retourne la valeur originale pour les codes spéciaux comme "2A"
     return code
 
 
@@ -46,9 +48,12 @@ def clean_and_transform_data():
   # Assurez-vous que cette fonction existe et convertit les codes de département comme prévu
   df['Code du département'] = df['Code du département'].apply(lambda x: x if len(x) > 2 else x.zfill(2))
 
+  # Convertir les codes des départements
+  df['Code du département'] = df['Code du département'].apply(convert_department_code)
+
   # Lecture et traitement des données des départements depuis la base de données
   departments_df = pd.read_sql("SELECT id, code_department FROM departments", con=engine)
-  departments_df['code_department'] = departments_df['code_department'].astype(str)
+  departments_df['code_department'] = departments_df['code_department'].astype(int)
 
   # Mappage des noms de colonnes pour df
   column_mapping = {

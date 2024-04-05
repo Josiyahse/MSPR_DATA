@@ -8,6 +8,7 @@ import pandas as pd
 from sqlalchemy import create_engine
 from sqlalchemy import inspect
 
+
 # Configuration
 URL = "https://www.insee.fr/fr/statistiques/fichier/2012804/sl_etc_2023T4.xls"  # Remplacez ceci par l'URL de votre fichier CSV
 FILENAME = "sl_etc_2023T4.xls"
@@ -25,6 +26,15 @@ def download_xls_file():
   with open(FILENAME, "wb") as file:
     file.write(response.content)
 
+def convert_department_code(code):
+  if code == "2A":
+    return 265  # Code ASCII de 'A' est 65
+  elif code == "2B":
+    return 266  # Code ASCII de 'B' est 66
+  try:
+    return int(code)
+  except ValueError:
+    return code
 
 # Nettoyer et transformer les données
 def clean_and_transform_data():
@@ -34,6 +44,9 @@ def clean_and_transform_data():
   # Connexion à la base de données pour accéder à la table 'departments'
   engine = create_engine(DB_CONNECTION)
   df_departments = pd.read_sql("SELECT id, code_department FROM departments", engine)
+
+  # Convertir les codes des départements
+  df['Code'] = df['Code'].apply(convert_department_code)
 
   # Remplacer le code du département par l'ID correspondant
   df = df.merge(df_departments, left_on='Code', right_on='code_department', how='left')

@@ -24,6 +24,17 @@ def download_xlsx_file():
     file.write(response.content)
 
 
+def convert_department_code(code):
+  if code == "2A":
+    return 265  # Code ASCII de 'A' est 65
+  elif code == "2B":
+    return 266  # Code ASCII de 'B' est 66
+  try:
+    return int(code)
+  except ValueError:
+    return code
+
+
 def clean_and_transform_data():
   engine = create_engine(DB_CONNECTION)
   df = pd.read_excel(FILENAME, dtype={'Code du département': str})
@@ -35,9 +46,12 @@ def clean_and_transform_data():
   df.rename(columns=department_columns, inplace=True)
   df['code_department'] = df['code_department'].apply(lambda x: x if len(x) > 2 else x.zfill(2))
 
+  df['code_department'] = df['code_department'].apply(convert_department_code)
+
   # Traitement des données des départements
   departments_df = pd.read_sql("SELECT id, code_department FROM departments", con=engine)
-  departments_df['code_department'] = departments_df['code_department'].astype(str)
+  departments_df['code_department'] = departments_df['code_department'].astype(int)
+
   df = df.merge(departments_df, how='left', left_on="code_department", right_on="code_department",
                 suffixes=('', '_dept'))
 
