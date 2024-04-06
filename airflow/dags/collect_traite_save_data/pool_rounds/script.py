@@ -33,7 +33,7 @@ class PollRound(Base):
   intentions = Column(Float)
   erreur_sup = Column(Float)
   erreur_inf = Column(Float)
-  tour = Column(Integer)
+  round = Column(Integer)
   year = Column(Integer)
   candidate = relationship('Candidate', back_populates='poll_rounds')
 
@@ -94,13 +94,13 @@ def process_and_save_poll_data():
     existing_poll_round = session.query(PollRound).filter(and_(
       PollRound.candidate_id == candidate_id,
       PollRound.year == year,
-      PollRound.tour == round_number
+      PollRound.round == round_number
     )).first()
 
     if existing_poll_round:
       existing_poll_round.intentions, existing_poll_round.erreur_sup, existing_poll_round.erreur_inf = avg_data.values()
     else:
-      session.add(PollRound(candidate_id=candidate_id, year=year, tour=round_number, **avg_data))
+      session.add(PollRound(candidate_id=candidate_id, year=year, round=round_number, **avg_data))
 
   session.commit()
 
@@ -114,6 +114,7 @@ default_args = {
   'retry_delay': timedelta(minutes=5),
   'email_on_failure': False,
   'email_on_retry': False,
+  'max_active_runs': 1
 }
 
 dag = DAG(
