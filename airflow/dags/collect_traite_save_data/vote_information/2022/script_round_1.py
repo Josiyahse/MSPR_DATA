@@ -32,6 +32,16 @@ def convert_department_code(code):
     return 265  # Code ASCII de 'A' est 65
   elif code == "2B":
     return 266  # Code ASCII de 'B' est 66
+  if code == "ZA":
+    return 971
+  elif code == "ZB":
+    return 972
+  if code == "ZC":
+    return 973
+  elif code == "ZD":
+    return 974
+  if code == "ZM":
+    return 976
   try:
     return int(code)
   except ValueError:
@@ -156,7 +166,7 @@ default_args = {
   "email_on_retry": False,
 }
 
-dag = DAG("data_processing_pipeline_vote_information_round_1", default_args=default_args)
+dag = DAG("data_processing_pipeline_vote_information_round_1", default_args=default_args,tags=["2022_vote_information"])
 
 t1 = PythonOperator(task_id="download_xlsx_file", python_callable=download_xlsx_file, dag=dag)
 t2 = PythonOperator(task_id="clean_and_transform_data", python_callable=clean_and_transform_data, dag=dag)

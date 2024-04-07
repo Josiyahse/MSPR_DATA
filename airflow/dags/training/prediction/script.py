@@ -7,8 +7,8 @@ import pickle
 from airflow.models import Variable
 
 DB_CONNECTION = Variable.get("AIRFLOW_DB_CONNECTION")
-MODEL_PATH = '/opt/airflow/models/decision_tree_regressor_model_20240406.pkl'
-MODEL_COLUMN_PATH = '/opt/airflow/models/model_columns_20240406.pkl'
+MODEL_PATH = '/opt/airflow/models/decision_tree_regressor_model_election_prediction.pkl'
+MODEL_COLUMN_PATH = '/opt/airflow/models/model_columns_election_prediction.pkl'
 
 default_args = {
   'owner': 'airflow',
@@ -40,12 +40,12 @@ def predict_winners(**kwargs):
   query = """
       SELECT *
       FROM election_data_set
-      WHERE year >= 2022 AND round = 2
+      WHERE year >= 2022
       """
   future_data = pd.read_sql_query(query, con=engine)
 
   # Supprimez l'utilisation de '...' et spécifiez les colonnes réelles à supprimer
-  columns_to_drop = ['candidate_id', 'candidate_votes', 'null_votes', 'expressed_votes']  # ajoutez plus si nécessaire
+  columns_to_drop = ['candidate_id', 'candidate_votes']
   X_predict = future_data.drop(columns=columns_to_drop)
 
   # Aligner les colonnes avec celles du modèle

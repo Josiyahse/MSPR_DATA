@@ -1,5 +1,6 @@
 from airflow.models import Variable
 from airflow import DAG
+from unidecode import unidecode  # Pour normaliser les accents
 import logging
 from airflow.operators.python_operator import PythonOperator
 from datetime import datetime
@@ -18,6 +19,12 @@ logger = logging.getLogger("airflow.task")
 year_of_election = 2022
 
 
+def normalize_name(name):
+  normalized = unidecode(name.lower())
+  logger.info(f"Normalizing name: {name} to {normalized}")
+  return normalized
+
+
 def download_xlsx_file():
   response = requests.get(URL)
   with open(FILENAME, "wb") as file:
@@ -29,6 +36,16 @@ def convert_department_code(code):
     return 265  # Code ASCII de 'A' est 65
   elif code == "2B":
     return 266  # Code ASCII de 'B' est 66
+  if code == "ZA":
+    return 971
+  elif code == "ZB":
+    return 972
+  if code == "ZC":
+    return 973
+  elif code == "ZD":
+    return 974
+  if code == "ZM":
+    return 976
   try:
     return int(code)
   except ValueError:
@@ -39,7 +56,7 @@ def clean_and_transform_data():
   engine = create_engine(DB_CONNECTION)
   df = pd.read_excel(FILENAME, dtype={'Code du département': str})
 
-  #df = pd.read_excel(URL, header=[0])
+  # df = pd.read_excel(URL, header=[0])
   # Mapping des noms de colonnes pour les départements
   department_columns = {
     "Code du département": "code_department",
@@ -135,7 +152,7 @@ def save_to_postgres():
       logger.info("Table 'election_results' created successfully.")
 
     df_to_save = clean_and_transform_data()
-    #logger.info(df_to_save)
+    # logger.info(df_to_save)
     df_to_save.to_sql(name="election_results", con=engine, if_exists="append", index=False)
     logger.info("Data saved to PostgreSQL successfully.")
   except Exception as e:
@@ -152,7 +169,7 @@ default_args = {
   "email_on_retry": False,
 }
 
-dag = DAG("election_data_processing_round_1", default_args=default_args)
+dag = DAG("election_data_processing_round_1", default_args=default_args, tags=["2022_election_result"])
 
 t1 = PythonOperator(
   task_id="download_xlsx_file",

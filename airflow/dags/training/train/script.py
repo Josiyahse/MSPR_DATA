@@ -42,10 +42,13 @@ def preprocess_data(**kwargs):
   engine = create_engine(DB_CONNECTION)
   df = pd.read_sql("SELECT * FROM election_data_set WHERE round = 1", con=engine)
 
+  df = df.drop(columns=['candidate_id','year','candidate_name',])
+
   # Sélectionnez vos caractéristiques X
   X_features = ['department_name', 'average_insecurity_rate', 'unemployment_rate', 'number_of_registered',
                 'total_votes', 'expressed_votes', 'party_name', 'party_positions',
-                'candidate_propositions', 'vote_intentions']  # Assurez-vous que ces colonnes existent
+                'candidate_propositions', 'vote_intentions', 'round',
+                'null_votes']  # Assurez-vous que ces colonnes existent
   X = df[X_features]
 
   # Il est conseillé de gérer les données catégorielles, comme 'department_name' et 'party_name'
@@ -74,9 +77,9 @@ def train_decision_tree(**kwargs):
   clf.fit(X_train, y_train)
 
   # Sauvegarder le modèle dans un fichier
-  model_filename = f"decision_tree_regressor_model_{kwargs['ds_nodash']}.pkl"
+  model_filename = f"decision_tree_regressor_model_election_prediction.pkl"
   model_filepath = os.path.join('/opt/airflow/models', model_filename)
-  model_column_filename = f"model_columns_{kwargs['ds_nodash']}.pkl"
+  model_column_filename = f"model_columns_election_prediction.pkl"
   model_column_filepath = os.path.join('/opt/airflow/models', model_column_filename)
 
   logger.info(f"Saving model to {model_filepath}")

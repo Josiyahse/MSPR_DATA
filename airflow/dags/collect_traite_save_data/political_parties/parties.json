@@ -58,5 +58,15 @@
     "name": "Reconquête !",
     "birthday": "2021",
     "position": ["Extrême-droite"]
+  },
+  {
+    "name": "Solidarité et progrès",
+    "birthday": "1996",
+    "position": ["Divers"]
+  },
+  {
+    "name": "Union populaire républicaine",
+    "birthday": "2007",
+    "position": ["Attrape-tout"]
   }
 ]

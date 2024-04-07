@@ -10,14 +10,16 @@ from sqlalchemy import inspect
 
 # Configuration
 URL = "https://www.data.gouv.fr/fr/datasets/r/e7b263e5-bae2-43cc-8944-c8daae6f7ff6"
-FILENAME = "resultats-par-niveau-dpt-t2-france-entiere.xlsx"  # Mettez à jour le chemin vers le fichier téléchargé
+FILENAME = "resultats-par-niveau-dpt-t2-france-entiere.xls"  # Mettez à jour le chemin vers le fichier téléchargé
+SHEET_NAME = "Résultats par niveau Dpt T2 Fra"
+HEADER = 0  # Les index commencent à 0, donc 3 signifie la quatrième ligne
 DB_CONNECTION = Variable.get("AIRFLOW_DB_CONNECTION")
 
 # Configurez le logger
 logger = logging.getLogger("airflow.task")
 
 # Définir la constante pour l'année de vote
-YEAR_OF_VOTE = 2022
+YEAR_OF_VOTE = 2017
 
 
 # Télécharger le fichier xls
@@ -32,16 +34,29 @@ def convert_department_code(code):
     return 265  # Code ASCII de 'A' est 65
   elif code == "2B":
     return 266  # Code ASCII de 'B' est 66
+  if code == "ZA":
+    return 971
+  elif code == "ZB":
+    return 972
+  if code == "ZC":
+    return 973
+  elif code == "ZD":
+    return 974
+  if code == "ZM":
+    return 976
   try:
     return int(code)
   except ValueError:
     return code
+
 
 def clean_and_transform_data():
   # Supposons que DB_CONNECTION et FILENAME sont définis précédemment
   engine = create_engine(DB_CONNECTION)
   # Lire le fichier Excel, en traitant initialement tous les codes comme des chaînes
   df = pd.read_excel(FILENAME, dtype={'Code du département': str})
+
+  df['Code du département'] = df['Code du département'].astype(str)
 
   # Appliquer la fonction de conversion au code du département si nécessaire
   # Assurez-vous que cette fonction existe et convertit les codes de département comme prévu
@@ -154,7 +169,8 @@ default_args = {
   "email_on_retry": False,
 }
 
-dag = DAG("data_processing_pipeline_vote_information_round_2", default_args=default_args)
+dag = DAG("data_processing_pipeline_vote_information_round_2_2017", default_args=default_args,
+          tags=["2017_vote_information"])
 
 t1 = PythonOperator(task_id="download_xlsx_file", python_callable=download_xlsx_file, dag=dag)
 t2 = PythonOperator(task_id="clean_and_transform_data", python_callable=clean_and_transform_data, dag=dag)

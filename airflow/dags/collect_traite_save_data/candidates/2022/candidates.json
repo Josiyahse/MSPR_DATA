@@ -219,7 +219,7 @@
   {
     "gender": "M",
     "firstname": "Jean-Luc",
-    "lastname": "MÉLENCHON",
+    "lastname": "MELENCHON",
     "birthday": "1951-08-19",
     "nickname": "me",
     "parti": "La France insoumise",
@@ -250,7 +250,7 @@
   {
     "gender": "F",
     "firstname": "Valérie",
-    "lastname": "PÉCRESSE",
+    "lastname": "PECRESSE",
     "birthday": "1967-07-14",
     "nickname": "pe",
     "parti": "Les républicains",
@@ -342,7 +342,7 @@
   },
   {
     "gender": "M",
-    "firstname": "Éric",
+    "firstname": "Eric",
     "lastname": "ZEMMOUR",
     "birthday": "1958-08-31",
     "nickname": "ze",

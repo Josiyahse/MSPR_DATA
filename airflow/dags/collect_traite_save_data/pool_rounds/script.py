@@ -56,7 +56,9 @@ def process_and_save_poll_data():
   session = Session()
 
   def normalize_name(name):
-    return unidecode(name).upper()
+    normalized = unidecode(name.lower())
+    logger.info(f"Normalizing name: {name} to {normalized}")
+    return normalized
 
   data = fetch_poll_data()
   candidate_polls = {}

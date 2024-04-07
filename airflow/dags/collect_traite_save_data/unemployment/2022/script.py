@@ -8,7 +8,6 @@ import pandas as pd
 from sqlalchemy import create_engine
 from sqlalchemy import inspect
 
-
 # Configuration
 URL = "https://www.insee.fr/fr/statistiques/fichier/2012804/sl_etc_2023T4.xls"  # Remplacez ceci par l'URL de votre fichier CSV
 FILENAME = "sl_etc_2023T4.xls"
@@ -26,15 +25,27 @@ def download_xls_file():
   with open(FILENAME, "wb") as file:
     file.write(response.content)
 
+
 def convert_department_code(code):
   if code == "2A":
     return 265  # Code ASCII de 'A' est 65
   elif code == "2B":
     return 266  # Code ASCII de 'B' est 66
+  if code == "ZA":
+    return 971
+  elif code == "ZB":
+    return 972
+  if code == "ZC":
+    return 973
+  elif code == "ZD":
+    return 974
+  if code == "ZM":
+    return 976
   try:
     return int(code)
   except ValueError:
     return code
+
 
 # Nettoyer et transformer les données
 def clean_and_transform_data():
@@ -150,7 +161,7 @@ default_args = {
   "email_on_retry": False,
 }
 
-dag = DAG("data_processing_pipeline_unemployment", default_args=default_args)
+dag = DAG("data_processing_pipeline_unemployment", default_args=default_args, tags=["chomage_2022"])
 
 t1 = PythonOperator(task_id="download_xls_file", python_callable=download_xls_file, dag=dag)
 t2 = PythonOperator(task_id="clean_and_transform_data", python_callable=clean_and_transform_data, dag=dag)

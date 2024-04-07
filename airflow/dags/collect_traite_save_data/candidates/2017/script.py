@@ -67,7 +67,7 @@ def save_to_postgres():
       firstname=candidate_data['firstname'],
       lastname=candidate_data['lastname'],
       birthday=datetime.strptime(candidate_data['birthday'], '%Y-%m-%d').date()
-    ).one_or_none()
+    ).first()
 
     # Si le candidat n'existe pas, le créer
     if not existing_candidate:
@@ -91,20 +91,22 @@ def save_to_postgres():
 
     # Vérifier si la proposition pour l'année et le candidat existe déjà
     existing_proposition = session.query(Proposition).filter_by(
-      year=2022,
+      year=2017,
       candidate_id=candidate.id
-    ).one_or_none()
+    ).first()
 
     # Si la proposition n'existe pas pour cette année et ce candidat, la créer
     if not existing_proposition:
       propositions = "; ".join(candidate_data['propositions'])
       proposition = Proposition(
-        year=2022,
+        year=2017,
         declarations=propositions,
         candidate_id=candidate.id
       )
       session.add(proposition)
-  session.commit()
+  with sessionmaker(bind=engine)() as session:
+    # Your logic here
+    session.commit()
 
 
 # DAG
@@ -117,9 +119,10 @@ default_args = {
 }
 
 dag = DAG(
-  "load_candidates",
+  "load_candidates_2017",
   default_args=default_args,
   description="Load candidates from JSON to PostgreSQL",
+  tags=["candidates"]
 )
 
 save_to_db_task = PythonOperator(

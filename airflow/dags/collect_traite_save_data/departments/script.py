@@ -10,6 +10,7 @@ from sqlalchemy import inspect
 from sqlalchemy import text
 
 
+
 # Configuration
 URL = "https://www.data.gouv.fr/fr/datasets/r/70cef74f-70b1-495a-8500-c089229c0254"  # Remplacez ceci par l'URL de votre fichier CSV
 FILENAME = "departements-france.csv"
@@ -32,6 +33,16 @@ def convert_department_code(code):
     return 265  # Code ASCII de 'A' est 65
   elif code == "2B":
     return 266  # Code ASCII de 'B' est 66
+  if code == "ZA":
+    return 971
+  elif code == "ZB":
+    return 972
+  if code == "ZC":
+    return 973
+  elif code == "ZD":
+    return 974
+  if code == "ZM":
+    return 976
   try:
     return int(code)
   except ValueError:

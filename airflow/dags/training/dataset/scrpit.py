@@ -6,11 +6,9 @@ from airflow.operators.python_operator import PythonOperator
 from datetime import datetime
 import pandas as pd
 from sqlalchemy import create_engine
-from sqlalchemy import inspect
 from sqlalchemy.sql import text
 
 # Configuration
-REGION_CODE = 11
 DB_CONNECTION = Variable.get("AIRFLOW_DB_CONNECTION")
 ROUNDS = json.loads(Variable.get("ROUNDS"))
 
@@ -87,13 +85,12 @@ JOIN poll_rounds pr ON e.candidate_id = pr.candidate_id AND e.round = pr.round A
 JOIN propositions prop ON e.candidate_id = prop.candidate_id AND e.year = prop.year
 JOIN VoteInformationFiltered vif ON e.department_id = vif.department_id AND e.round = vif.round
 JOIN CandidatePositions cp ON e.candidate_id = cp.candidate_id
-WHERE d.code_region = :region_code -- ou un autre paramètre si nécessaire
-AND e.round = :round_number -- utilisez la variable de liaison pour le numéro de tour
+AND e.round = :round_number
 ORDER BY e.candidate_id, e.round, d.name;
       """)
 
       # Exécuter la requête pour le tour actuel
-      result = conn.execute(query, {'region_code': REGION_CODE, 'round_number': round_number}).fetchall()
+      result = conn.execute(query, {'round_number': round_number}).fetchall()
       df_round = pd.DataFrame(result, columns=result[0].keys())
 
       # Concaténer les résultats du tour avec le DataFrame final
