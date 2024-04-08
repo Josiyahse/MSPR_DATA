@@ -8,12 +8,7 @@ import pandas as pd
 from sqlalchemy import create_engine
 from sqlalchemy.sql import text
 
-# Configuration
-DB_CONNECTION = Variable.get("AIRFLOW_DB_CONNECTION")
-ROUNDS = json.loads(Variable.get("ROUNDS"))
 
-# Assurez-vous que ROUNDS est une liste d'entiers
-ROUNDS = [int(round) for round in ROUNDS]
 
 # Configurez le logger
 logger = logging.getLogger("airflow.task")
