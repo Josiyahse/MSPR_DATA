@@ -94,6 +94,9 @@ services:
       - "5432:5432"
     volumes:
       - postgres-db-volume:/var/lib/postgresql/data
+    networks:
+      default:
+        ipv4_address: 172.16.5.10
     healthcheck:
       test: [ "CMD", "pg_isready", "-U", "airflow" ]
       interval: 10s
@@ -367,3 +370,9 @@ services:
 volumes:
   postgres-db-volume:
   pgadmin:
+
+networks:
+  default:
+    ipam:
+      config:
+        - subnet: 172.16.0.0/16
