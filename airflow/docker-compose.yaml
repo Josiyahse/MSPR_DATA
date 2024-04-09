@@ -49,8 +49,8 @@ x-airflow-common:
   # In order to add custom dependencies or upgrade provider packages you can use your extended image.
   # Comment the image line, place your Dockerfile in the directory where you placed the docker-compose.yaml
   # and uncomment the "build" line below, Then run `docker-compose build` to build the images.
-  image: ${AIRFLOW_IMAGE_NAME:-apache/airflow:2.8.3}
-  # build: .
+  # image: ${AIRFLOW_IMAGE_NAME:-apache/airflow:2.8.3}
+  build: .
   environment:
     &airflow-common-env
     AIRFLOW__CORE__EXECUTOR: CeleryExecutor
@@ -59,7 +59,7 @@ x-airflow-common:
     AIRFLOW__CELERY__BROKER_URL: redis://:@redis:6379/0
     AIRFLOW__CORE__FERNET_KEY: ''
     AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: 'true'
-    AIRFLOW__CORE__LOAD_EXAMPLES: 'true'
+    AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
     AIRFLOW__API__AUTH_BACKENDS: 'airflow.api.auth.backend.basic_auth,airflow.api.auth.backend.session'
     # yamllint disable rule:line-length
     # Use simple http server on scheduler for health checks
@@ -68,12 +68,13 @@ x-airflow-common:
     AIRFLOW__SCHEDULER__ENABLE_HEALTH_CHECK: 'true'
     # WARNING: Use _PIP_ADDITIONAL_REQUIREMENTS option ONLY for a quick checks
     # for other purpose (development, test and especially production usage) build/extend Airflow image.
-    _PIP_ADDITIONAL_REQUIREMENTS: ${_PIP_ADDITIONAL_REQUIREMENTS:-}
+    _PIP_ADDITIONAL_REQUIREMENTS: ${_PIP_ADDITIONAL_REQUIREMENTS:-dbfread}
   volumes:
     - ${AIRFLOW_PROJ_DIR:-.}/dags:/opt/airflow/dags
     - ${AIRFLOW_PROJ_DIR:-.}/logs:/opt/airflow/logs
     - ${AIRFLOW_PROJ_DIR:-.}/config:/opt/airflow/config
     - ${AIRFLOW_PROJ_DIR:-.}/plugins:/opt/airflow/plugins
+    - ${AIRFLOW_PROJ_DIR:-.}/models:/opt/airflow/models:rw
   user: "${AIRFLOW_UID:-50000}:0"
   depends_on:
     &airflow-common-depends-on
@@ -89,13 +90,19 @@ services:
       POSTGRES_USER: airflow
       POSTGRES_PASSWORD: airflow
       POSTGRES_DB: airflow
+    ports:
+      - "5432:5432"
     volumes:
       - postgres-db-volume:/var/lib/postgresql/data
+    networks:
+      default:
+        ipv4_address: 172.16.5.10
     healthcheck:
-      test: ["CMD", "pg_isready", "-U", "airflow"]
+      test: [ "CMD", "pg_isready", "-U", "airflow" ]
       interval: 10s
       retries: 5
       start_period: 5s
+
     restart: always
 
   redis:
@@ -103,7 +110,7 @@ services:
     expose:
       - 6379
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: [ "CMD", "redis-cli", "ping" ]
       interval: 10s
       timeout: 30s
       retries: 50
@@ -116,7 +123,7 @@ services:
     ports:
       - "8080:8080"
     healthcheck:
-      test: ["CMD", "curl", "--fail", "http://localhost:8080/health"]
+      test: [ "CMD", "curl", "--fail", "http://localhost:8080/health" ]
       interval: 30s
       timeout: 10s
       retries: 5
@@ -127,11 +134,12 @@ services:
       airflow-init:
         condition: service_completed_successfully
 
+
   airflow-scheduler:
     <<: *airflow-common
     command: scheduler
     healthcheck:
-      test: ["CMD", "curl", "--fail", "http://localhost:8974/health"]
+      test: [ "CMD", "curl", "--fail", "http://localhost:8974/health" ]
       interval: 30s
       timeout: 10s
       retries: 5
@@ -169,7 +177,7 @@ services:
     <<: *airflow-common
     command: triggerer
     healthcheck:
-      test: ["CMD-SHELL", 'airflow jobs check --job-type TriggererJob --hostname "$${HOSTNAME}"']
+      test: [ "CMD-SHELL", 'airflow jobs check --job-type TriggererJob --hostname "$${HOSTNAME}"' ]
       interval: 30s
       timeout: 10s
       retries: 5
@@ -231,8 +239,17 @@ services:
         fi
         mkdir -p /sources/logs /sources/dags /sources/plugins
         chown -R "${AIRFLOW_UID}:0" /sources/{logs,dags,plugins}
+
+        # Initialisation de la base de données Redash
+        echo "Création de la base de données Redash..."
+        PGPASSWORD="${POSTGRES_PASSWORD}" psql -h postgres -U "${POSTGRES_USER}" -d postgres -c "CREATE DATABASE redash;";
+        PGPASSWORD="${POSTGRES_PASSWORD}" psql -h postgres -U "${POSTGRES_USER}" -d postgres -c "CREATE USER redash WITH PASSWORD 'redash';";
+        PGPASSWORD="${POSTGRES_PASSWORD}" psql -h postgres -U "${POSTGRES_USER}" -d postgres -c "GRANT ALL PRIVILEGES ON DATABASE redash TO redash;";
+
+        # Continuation de votre script...
+
         exec /entrypoint airflow version
-    # yamllint enable rule:line-length
+        # yamllint enable rule:line-length
     environment:
       <<: *airflow-common-env
       _AIRFLOW_DB_MIGRATE: 'true'
@@ -268,7 +285,7 @@ services:
     ports:
       - "5555:5555"
     healthcheck:
-      test: ["CMD", "curl", "--fail", "http://localhost:5555/"]
+      test: [ "CMD", "curl", "--fail", "http://localhost:5555/" ]
       interval: 30s
       timeout: 10s
       retries: 5
@@ -279,5 +296,84 @@ services:
       airflow-init:
         condition: service_completed_successfully
 
+  pgadmin:
+    container_name: pgadmin_container
+    image: dpage/pgadmin4
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-pgadmin4@pgadmin.org}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-admin}
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+    volumes:
+      - pgadmin:/var/lib/pgadmin
+      - ${AIRFLOW_PROJ_DIR:-.}/dumps:/home/dumps
+    ports:
+      - "${PGADMIN_PORT:-5050}:80"
+
+    restart: unless-stopped
+  # Service Redash
+  redash:
+    image: redash/redash:latest
+    depends_on:
+      - postgres
+      - redis
+    ports:
+      - "5000:5000"
+    environment:
+      REDASH_DATABASE_INIT: "true"
+      PYTHONUNBUFFERED: 0
+      REDASH_WEB_WORKERS: 4
+      REDASH_LOG_LEVEL: "INFO"
+      REDASH_REDIS_URL: "redis://:@redis:6379/0"
+      REDASH_DATABASE_URL: "postgresql://airflow:airflow@postgres/redash"
+      REDASH_COOKIE_SECRET: "Q422k6vaXUk8DRTZZRDQ"
+      REDASH_SECRET_KEY: "redash-secret-key"
+      REDASH_MAIL_SERVER: "smtp2http"
+      REDASH_MAIL_DEFAULT_SENDER: "dalong@qq.com"
+    command: server
+    restart: always
+
+  redash_worker:
+    image: redash/redash:latest
+    depends_on:
+      - postgres
+      - redis
+    env_file:
+      - .env.redash
+    environment:
+      REDASH_DATABASE_INIT: "true"
+      PYTHONUNBUFFERED: 0
+      REDASH_LOG_LEVEL: "INFO"
+      REDASH_REDIS_URL: "redis://:@redis:6379/0"
+      REDASH_DATABASE_URL: "postgresql://airflow:airflow@postgres/redash"
+      REDASH_COOKIE_SECRET: "Q422k6vaXUk8DRTZZRDQ"
+      REDASH_MAIL_SERVER: "smtp2http"
+      REDASH_MAIL_DEFAULT_SENDER: "dalong@qq.com"
+    command: worker
+    restart: always
+
+  redash_scheduler:
+    image: redash/redash:latest
+    depends_on:
+      - postgres
+      - redis
+    environment:
+      REDASH_DATABASE_INIT: "true"
+      PYTHONUNBUFFERED: 0
+      REDASH_LOG_LEVEL: "INFO"
+      REDASH_REDIS_URL: "redis://:@redis:6379/0"
+      REDASH_DATABASE_URL: "postgresql://airflow:airflow@postgres/redash"
+      REDASH_COOKIE_SECRET: "Q422k6vaXUk8DRTZZRDQ"
+      REDASH_MAIL_SERVER: "smtp2http"
+      REDASH_MAIL_DEFAULT_SENDER: "dalong@qq.com"
+    command: scheduler
+    restart: always
+
 volumes:
   postgres-db-volume:
+  pgadmin:
+
+networks:
+  default:
+    ipam:
+      config:
+        - subnet: 172.16.0.0/16

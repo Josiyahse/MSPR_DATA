@@ -1,0 +1,123 @@
+[
+  {
+    "gender": "F",
+    "firstname": "Nathalie",
+    "lastname": "ARTHAUD",
+    "birthday": "1970-02-23",
+    "nickname": "ar",
+    "parti": "Lutte ouvrière",
+    "propositions": [
+      ""
+    ]
+  },
+  {
+    "gender": "M",
+    "firstname": "Nicolas",
+    "lastname": "DUPONT-AIGNAN",
+    "birthday": "1961-03-07",
+    "nickname": "da",
+    "parti": "Debout la France !",
+    "propositions": [
+      ""
+    ]
+  },
+  {
+    "gender": "M",
+    "firstname": "Jean",
+    "lastname": "LASSALLE",
+    "birthday": "1955-05-03",
+    "nickname": "la",
+    "parti": "Résistons !",
+    "propositions": [
+      ""
+    ]
+  },
+  {
+    "gender": "F",
+    "firstname": "Marine",
+    "lastname": "LE PEN",
+    "birthday": "1968-08-05",
+    "nickname": "le",
+    "parti": "Le rassemblement national",
+    "propositions": [
+      ""
+    ]
+  },
+  {
+    "gender": "M",
+    "firstname": "Emmanuel",
+    "lastname": "MACRON",
+    "birthday": "1977-12-21",
+    "nickname": "ma",
+    "parti": "En marche !",
+    "propositions": [
+      ""
+    ]
+  },
+  {
+    "gender": "M",
+    "firstname": "Jean-Luc",
+    "lastname": "MELENCHON",
+    "birthday": "1951-08-19",
+    "nickname": "me",
+    "parti": "La France insoumise",
+    "propositions": [
+      ""
+    ]
+  },
+  {
+    "gender": "M",
+    "firstname": "Philippe",
+    "lastname": "POUTOU",
+    "birthday": "1967-03-14",
+    "nickname": "po",
+    "parti": "Nouveau parti anticapitaliste",
+    "propositions": [
+      ""
+    ]
+  },
+  {
+    "gender": "M",
+    "firstname": "Benoit",
+    "lastname": "HAMON",
+    "birthday": "1967-06-26",
+    "nickname": "bh",
+    "parti": "Le parti socialiste",
+    "propositions": [
+      ""
+    ]
+  },
+  {
+    "gender": "M",
+    "firstname": "Jacques",
+    "lastname": "CHEMINADE",
+    "birthday": "1941-08-20",
+    "nickname": "jc",
+    "parti": "Solidarité et progrès",
+    "propositions": [
+      ""
+    ]
+  },
+  {
+    "gender": "M",
+    "firstname": "François",
+    "lastname": "ASSELINEAU",
+    "birthday": "1957-07-14",
+    "nickname": "fa",
+    "parti": "Union populaire républicaine",
+    "propositions": [
+      ""
+    ]
+  },
+  {
+    "gender": "M",
+    "firstname": "François",
+    "lastname": "FILLON",
+    "birthday": "1954-03-04",
+    "nickname": "ff",
+    "parti": "Les républicains",
+    "propositions": [
+      ""
+    ]
+  }
+]

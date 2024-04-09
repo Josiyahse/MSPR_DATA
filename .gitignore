@@ -1,0 +1,9 @@
+/airflow/config
+/airflow/logs
+/airflow/logs/*
+.idea
+# Ignore les fichiers temporaires
+*~
+
+# Ignore les fichiers de cache Python
+**/__py_cache__/**
