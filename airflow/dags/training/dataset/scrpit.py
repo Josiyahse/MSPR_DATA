@@ -8,11 +8,9 @@ import pandas as pd
 from sqlalchemy import create_engine
 from sqlalchemy.sql import text
 
-
-
 # Configurez le logger
 logger = logging.getLogger("airflow.task")
-
+DB_CONNECTION = Variable.get("AIRFLOW_DB_CONNECTION")
 # Assurez-vous de configurer les connexions à votre environnement Airflow avant d'exécuter ce DAG
 engine = create_engine(DB_CONNECTION)
 

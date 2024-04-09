@@ -72,7 +72,7 @@ Une fois l'address récupérer, il faut définir la variable de connexion dans l
   - Nom: AIRFLOW_DB_CONNECTION
   - String de connexion: ```postgresql+psycopg2://{USER}:{PASSWORD}@{IP_BASE_DANS_DOCKER}:5432/{BASE_DE_DONNEE}```
 
-# Une fois tous le projet lancé, vous pouvez accedé aux different services:
+# Une fois tout le projet lancé, vous pouvez accedé aux different services:
 
 - [Airflow](http://localhost:8080/)
 - [Redash](http://localhost:5000/)
