@@ -2,18 +2,26 @@
 
 Projet visant à créer un traitement et un traitement pour de la prédiction du prochain président de la république
 
-Si voue êtes sur window ou mac, il faudra créer un fichier de configuration pour votre container.
-Sur ces machine les spec sont limité par defaut et elles empêche Airflow de fonctionner.
+# Comment lancer le projet ?
 
-Céer un ficher dans : ```C:\Users\<Utillisateur>\.wslconfig```
+Le projet fonctionne sous docker.
 
-🚨🚨 Cette configuration est global pour votre Docker. Si vou souhaiter configurer qu'un seul container il faut utiliser
-le fichier wsl.conf directment present dans le container. Plus
+Si voue êtes sur window ou mac, il faudra créer un fichier de configuration pour votre conteneur.
+Sur ces machines les spec sont limité par défaut et elle empêche Airflow de fonctionner.
+
+Céer un fichier dans :
+
+```bash
+C:\Users\<Utillisateur>\.wslconfig
+```
+
+🚨🚨 Cette configuration est global pour votre Docker. Si vou souhaiter configurer qu'un seul conteneur, il faut utiliser
+le fichier wsl.conf directement present dans le conteneur. Plus
 sur [Airflow docker compose](https://learn.microsoft.com/en-us/windows/wsl/wsl-config#wslconf)
 
-Et voicis un exemple de configuration:
+Et voici un exemple de configuration :
 
-```bash:
+```bash
 # Settings apply across all Linux distros running on WSL 2
 [wsl2]
 
@@ -34,46 +42,96 @@ swapfile=C:\\temp\\wsl-swap.vhdx
 sparseVhd=true
 ```
 
-Pour la visualisation avec redash, lancer cette commande:
+## Comandes d'initalisation
 
+Lancer la commande suivante pour vous placer dans le répertoire airflow :
+
+```bash
+cd airflow
 ```
-docker-compose run --rm redash create_db
-```
 
-Une fois le tout paramétrer, créer les dossier suivants dans le dossier airflow:
+Pour initializer les conteneurs airflow, il faut lancer le script :
 
-- config
-- dags
-- logs
-
-Lancer ensuite la commande dans le repertoire airflow:
-
-```
+```bash
 docker compose up airflow-init
 ```
 
-Une fois la commande précédente terminer, lancer dans le airflow:
+Pour initialiser la base de données Redash, vous lancer cette commande :
 
+```bash
+docker-compose run --rm redash create_db
 ```
+
+Lancer ensuite la commande dans le repertoire airflow :
+
+```bash
 docker compose up
 ```
 
-Vous pouvez determiner le réseau sur quelle adresse IP tourne votre base de donnée avec la commande:
+Vous pouvez verifier que tous vos conteneurs tourenent bien avec la commande :
 
+```bash
+docker ps
 ```
+
+🚨🚨 Il est possible que vos conteneurs ne se lance pas, comme le conteneur postgres car une autre instance utilise déja
+ce port. Vous devez arrêter les autres services pour lancer airflow dans ce cas.
+
+## Configuration des bases de données
+
+Des bases de données sont présents dans le projet. Elles sont une capture de l'avancement du projet au 9 avril 2024.
+les importer vous evitera de lancer les pipline manuelement car il faut le faire dans un ordre précis. Nous devons
+restaurer deux bases, postgres (pour les data de traitement) et redash pour la visualisation.
+
+Les dump des deux base se trouve dans le répertoire ``airflow/dumps``. Vous pouvez vou connecter à l'instance:
+
+- [PgAdmin](http://localhost:5050/browser/)
+  - mot de passe : admin ou postgres
+
+Une fois cela fait vous devez vous connecter. Au serveur de base de
+données avec les infos suivantes:
+
+- **p**: 172.16.5.10
+- **port**:5432
+- **user**: airflow
+- **password**:airflow
+- **database**: airflow
+
+L'IP est normalement fixé. Mais si vous n'arrivez pas à vous connecter à l'adresse, vous pouvez determiner le réseau sur
+quelle adresse IP tourne votre base de donnée avec la
+commande :
+
+```bash
 docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' airflow-postgres-1
 ```
 
-Une fois l'address récupérer, il faut définir la variable de connexion dans l'interface graphique de airflow.
+## Configuration de airflow
 
-- Accédez à Admin > Connections.
-- Cliquez sur le bouton " + " pour ajouter une nouvelle connexion.
-- Remplissez les détails de la connexion:
-  - Nom: AIRFLOW_DB_CONNECTION
-  - String de connexion: ```postgresql+psycopg2://{USER}:{PASSWORD}@{IP_BASE_DANS_DOCKER}:5432/{BASE_DE_DONNEE}```
-
-# Une fois tout le projet lancé, vous pouvez accedé aux different services:
+Vous devriez actuellement être capable de vous à airflow :
 
 - [Airflow](http://localhost:8080/)
+  - **user**: airflow
+  - **mot de passe** : airflow
+
+Pour que les DAG tournent sans accros il manque des variables indispensables au projet, par exemple la
+variable ```AIRFLOW_DB_CONNECTION``` qui contient le string de connection la base de données. Vous avez deux options
+pour configurer les variables.
+Soit, vous les importez. Pou ce faire:
+
+- ### Accédez à Admin > Variables
+  - ### Importation :
+    - Cliquez sur le boutton a gauche importer un fichier
+    - Choisir le fichier se trouvant dans le répertoire ```airflow/varaiables```
+    - Cliquez sur le boutton importer
+  - ### Configuration :
+    - Cliquez sur le bouton " + " pour ajouter une nouvelle variable.
+      - Remplissez les détails de la variable :
+        - Nom: **AIRFLOW_DB_CONNECTION**
+        - valeur: ```postgresql+psycopg2://{USER}:{PASSWORD}@{IP_BASE_DANS_DOCKER}:5432/{BASE_DE_DONNEE}```
+        - description: string de connection a la base de données
+
+# Lancer Redash pour la visualisation:
+Vous devriez actuellement être capable de vous à Redash :
 - [Redash](http://localhost:5000/)
-- [PgAdmin](http://localhost:5050/browser/)
+  - **user**: airflow@gmail.com
+  - **mot de passe** : airflow
